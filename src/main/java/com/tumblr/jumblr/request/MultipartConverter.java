@@ -18,10 +18,12 @@ import org.scribe.model.OAuthRequest;
 public class MultipartConverter {
 
     private String boundary;
+
     private OAuthRequest originalRequest;
 
     private Integer bodyLength = 0;
-    private List<Object> responsePieces;
+
+    private List<byte[]> responsePieces;
 
     public MultipartConverter(OAuthRequest request, Map<String, ?> bodyMap) throws IOException {
         this.originalRequest = request;
@@ -43,11 +45,7 @@ public class MultipartConverter {
         byte[] payload = new byte[bodyLength];
         byte[] local;
         for (Object piece : responsePieces) {
-            if (piece instanceof StringBuilder) {
-                local = ((StringBuilder) piece).toString().getBytes();
-            } else {
-                local = (byte[]) piece;
-            }
+            local = (byte[]) piece;
             System.arraycopy(local, 0, payload, used, local.length);
             used += local.length;
         }
@@ -60,34 +58,33 @@ public class MultipartConverter {
     }
 
     private void addResponsePiece(StringBuilder builder) {
-        responsePieces.add(builder);
-        bodyLength += builder.toString().length();
+        byte[] bytes = builder.toString().getBytes();
+        responsePieces.add(bytes);
+        bodyLength += bytes.length;
     }
 
     private void computeBody(Map<String, ?> bodyMap) throws IOException {
-        responsePieces = new ArrayList<Object>();
-
+        responsePieces = new ArrayList<byte[]>();
         StringBuilder message = new StringBuilder();
         message.append("Content-Type: multipart/form-data; boundary=").append(boundary).append("\r\n\r\n");
-        for (String key : bodyMap.keySet()) {
-            Object object = bodyMap.get(key);
-            if (object == null) { continue; }
+        for (Map.Entry<String, ?> entry : bodyMap.entrySet()) {
+            String key = entry.getKey();
+            Object object = entry.getValue();
+            if (object == null) {
+                continue;
+            }
             if (object instanceof File) {
                 File f = (File) object;
                 String mime = URLConnection.guessContentTypeFromName(f.getName());
-
-                DataInputStream dis = null;
-                byte[] result = new byte[(int)f.length()];
-
+                byte[] result = new byte[(int) f.length()];
+                DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(f)));
                 try {
-                    dis = new DataInputStream(new BufferedInputStream(new FileInputStream(f)));
                     dis.readFully(result);
                 } finally {
                     if (dis != null) {
                         dis.close();
                     }
                 }
-
                 message.append("--").append(boundary).append("\r\n");
                 message.append("Content-Disposition: form-data; name=\"").append(key).append("\"; filename=\"").append(f.getName()).append("\"\r\n");
                 message.append("Content-Type: ").append(mime).append("\r\n\r\n");
@@ -100,9 +97,7 @@ public class MultipartConverter {
                 message.append(object.toString()).append("\r\n");
             }
         }
-
         message.append("--").append(boundary).append("--\r\n");
         this.addResponsePiece(message);
     }
-
 }

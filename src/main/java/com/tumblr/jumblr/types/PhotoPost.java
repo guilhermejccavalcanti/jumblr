@@ -13,12 +13,15 @@ import java.util.Map;
 public class PhotoPost extends Post {
 
     private String caption;
+
     private Integer width, height;
 
     private String link;
+
     private List<Photo> photos;
 
     protected List<Photo> pendingPhotos;
+
     protected PhotoType postType = null;
 
     /**
@@ -34,7 +37,7 @@ public class PhotoPost extends Post {
      * @return boolean
      */
     public boolean isPhotoset() {
-        return photos.size() > 1;
+        return photos != null && photos.size() > 1;
     }
 
     /**
@@ -119,7 +122,6 @@ public class PhotoPost extends Post {
         details.put("type", "photo");
         details.put("link", link);
         details.put("caption", caption);
-
         if (pendingPhotos != null) {
             for (int i = 0; i < pendingPhotos.size(); i++) {
                 PhotoType type = pendingPhotos.get(0).getType();
@@ -128,8 +130,6 @@ public class PhotoPost extends Post {
                 }
             }
         }
-
         return details;
     }
-
 }

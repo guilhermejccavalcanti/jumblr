@@ -13,10 +13,11 @@ public class Photo {
      * Types of the post - what kind of data does it have?
      */
     public enum PhotoType {
-        SOURCE("source"),
-        FILE("data");
+
+        SOURCE("source"), FILE("data");
 
         private final String prefix;
+
         private PhotoType(String prefix) {
             this.prefix = prefix;
         }
@@ -24,12 +25,16 @@ public class Photo {
         public String getPrefix() {
             return this.prefix;
         }
-    };
+    }
+
+    ;
 
     private String caption;
+
     private List<PhotoSize> alt_sizes;
 
     private String source;
+
     private File file;
 
     /**
@@ -53,10 +58,16 @@ public class Photo {
      * @return PhotoType the type of photo
      */
     public PhotoType getType() {
-        if (this.source != null) { return PhotoType.SOURCE; }
-        if (this.file   != null) { return PhotoType.FILE;   }
+        if (this.source != null) {
+            return PhotoType.SOURCE;
+        }
+        if (this.file != null) {
+            return PhotoType.FILE;
+        }
         return null;
     }
+
+    private PhotoSize original_size;
 
     /**
      * Get the sizes of this Photo
@@ -64,6 +75,14 @@ public class Photo {
      */
     public List<PhotoSize> getSizes() {
         return alt_sizes;
+    }
+
+    /**
+     * Get the original sized photo
+     * @return the original sized PhotoSize
+     */
+    public PhotoSize getOriginalSize() {
+        return original_size;
     }
 
     /**
@@ -87,5 +106,4 @@ public class Photo {
             return null;
         }
     }
-
 }
